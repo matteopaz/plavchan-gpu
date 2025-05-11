@@ -55,7 +55,7 @@ class CUDABuildExt(build_ext):
         super().build_extension(ext)
 
 setup(
-    name="plavchan-gpu",
+    name="plavchan_gpu",
     version='1.0',
     ext_modules=[
         Extension(

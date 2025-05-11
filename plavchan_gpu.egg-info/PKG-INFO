@@ -1,5 +1,5 @@
 Metadata-Version: 2.4
-Name: plavchan-gpu
+Name: plavchan_gpu
 Version: 0.1.0
 Summary: GPU-accelerated Plavchan periodogram calculation
 Author-email: Matthew Paz <matteopi314@gmail.com>
@@ -23,7 +23,7 @@ A GPU-accelerated implementation of the Plavchan periodogram for time series ana
 ## Installation
 
 ```bash
-pip install plavchan-gpu
+pip install plavchan_gpu
 ```
 
 ### Requirements

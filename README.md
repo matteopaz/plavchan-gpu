@@ -5,7 +5,7 @@ A GPU-accelerated implementation of the Plavchan periodogram for time series ana
 ## Installation
 
 ```bash
-pip install plavchan-gpu
+pip install plavchan_gpu
 ```
 
 ### Requirements

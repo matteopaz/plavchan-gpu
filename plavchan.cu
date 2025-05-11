@@ -75,10 +75,8 @@ static PyObject* PY_plavchan_periodogram(PyObject* self, PyObject* args) {
     PyObject* pymags;
     PyObject* pytimes;
     PyObject* pytrialperiods;
-    int nBlocks;
-    int nThreads;
     float width;
-    if (PyArg_ParseTuple(args, "OOOfii", &pymags, &pytimes, &pytrialperiods, &width, &nBlocks, &nThreads) == 0) {
+    if (PyArg_ParseTuple(args, "OOOfii", &pymags, &pytimes, &pytrialperiods, &width) == 0) {
         return NULL;
     }
 
@@ -127,7 +125,7 @@ static struct PyMethodDef methods[] = {
 
 static struct PyModuleDef module = {
     PyModuleDef_HEAD_INIT,
-    "plavchan", // module name
+    "plavchan_gpu", // module name
     NULL,
     -1,
     methods
