@@ -76,7 +76,7 @@ static PyObject* PY_plavchan_periodogram(PyObject* self, PyObject* args) {
     PyObject* pytimes;
     PyObject* pytrialperiods;
     float width;
-    if (PyArg_ParseTuple(args, "OOOfii", &pymags, &pytimes, &pytrialperiods, &width) == 0) {
+    if (PyArg_ParseTuple(args, "OOOf", &pymags, &pytimes, &pytrialperiods, &width) == 0) {
         return NULL;
     }
 
