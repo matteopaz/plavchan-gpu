@@ -1,0 +1,9 @@
+LICENSE
+README.md
+plavchan.cu
+pyproject.toml
+setup.py
+plavchan_gpu.egg-info/PKG-INFO
+plavchan_gpu.egg-info/SOURCES.txt
+plavchan_gpu.egg-info/dependency_links.txt
+plavchan_gpu.egg-info/top_level.txt
