@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "__locale": "cpp",
+        "chrono": "cpp",
+        "ios": "cpp"
+    },
+    "username": "mpaz",
+    "host": "irsagpu2",
+    "port": 2345,
+}

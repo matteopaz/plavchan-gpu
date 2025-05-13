@@ -2,6 +2,7 @@ LICENSE
 README.md
 plavchan.cu
 pyproject.toml
+python_testing.py
 setup.py
 plavchan_gpu.egg-info/PKG-INFO
 plavchan_gpu.egg-info/SOURCES.txt

@@ -1,4 +1,4 @@
-from .plavchan import __cuda__plavchan_pgram
+from plavchan import __cuda__plavchan_pgram
 
 def plavchan_periodogram(mags, times, trial_periods, width):
     """

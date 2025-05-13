@@ -5,6 +5,7 @@
 
 static int nBlocks = 256;
 static int nThreads = 512;
+static const float FLOAT_SCALE = 100.0;
 
 typedef struct {
     float* array;
@@ -69,7 +70,6 @@ __device__ int partition(Array1D* arr, Array1D* sim, int l, int h)
 }
  
 __device__ void simulSort(Array1D* main, Array1D* sim, float* stack_buf) {   
-
     if (main->dim1 != sim->dim1) {
         printf("Error: Array dimensions do not match.\n");
         return;
@@ -112,6 +112,8 @@ __device__ void simulSort(Array1D* main, Array1D* sim, float* stack_buf) {
 
 __device__ void foldLC(Array1D* mag, Array1D* time, float modulus, float* stack_buf) {
     float min = getMin(time);
+    float max = getMax(time);
+    float scaleFactor = FLOAT_SCALE / (max - min);
 
     // raise error if modulus is 0
     if (modulus == 0) {
@@ -124,20 +126,20 @@ __device__ void foldLC(Array1D* mag, Array1D* time, float modulus, float* stack_
 
     // fold the light curve
     for (int i = 0; i < time->dim1; i++) {
-        time->array[i] = fmodf(time->array[i] - min, modulus);
+        time->array[i] = fmodf(scaleFactor * (time->array[i] - min), scaleFactor * modulus); // Times now lie on [0, FLOAT_SCALE]
     }
 
     simulSort(time, mag, stack_buf);
 }
 
 __device__ void boxcar_smoothing(Array1D* m, Array1D* t, float width, Array1D* smoothed) {
-    float halfWidth = width * (getMax(t) - getMin(t)) / 2;
+    float halfWidth = width * FLOAT_SCALE / 2.0;
     float runningSum = 0;
 
     float* left = t->array;
     float* right = t->array;
 
-    for (size_t i = 0; i < m->dim1; i++) {
+    for (size_t i = 0; i < t->dim1; i++) {
         float rightLim = t->array[i] + halfWidth;
         float leftLim = t->array[i] - halfWidth;
 
@@ -150,12 +152,12 @@ __device__ void boxcar_smoothing(Array1D* m, Array1D* t, float width, Array1D* s
             left++;
         }
 
-        if (right - left == 0) {
-            smoothed->array[i] = 0.0;
-            continue;
-        }
+        // if (right - left == 0) {
+        //     smoothed->array[i] = 0.0;
+        //     continue;
+        // }
 
-        smoothed->array[i] = runningSum / (right - left);
+        smoothed->array[i] = runningSum / (1+right - left);
     }
 }
 

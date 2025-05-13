@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build CUDA Executable",
+            "type": "shell",
+            "command": "/usr/local/cuda/bin/nvcc",
+            "args": [
+                "-g",
+                "-G",
+                "${workspaceFolder}/${fileBasename}",
+                "-o",
+                "${workspaceFolder}/build/${fileBasenameNoExtension}"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "detail": "Task to build a CUDA executable using nvcc."
+        }
+    ]
+}
