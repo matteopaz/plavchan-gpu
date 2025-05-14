@@ -3,6 +3,7 @@ from setuptools.command.build_ext import build_ext
 import os
 import sys
 import subprocess
+import sysconfig
 
 class CUDABuildExt(build_ext):
     def build_extension(self, ext):
@@ -54,18 +55,24 @@ class CUDABuildExt(build_ext):
         # Now build the extension with the object files
         super().build_extension(ext)
 
+python_include = sysconfig.get_path('include')
+python_lib = sysconfig.get_config_var('LIBDIR')
+python_version = f"python{sys.version_info.major}.{sys.version_info.minor}"
+
+cuda_home = os.environ.get('CUDA_HOME') or os.environ.get('CUDA_PATH') or '/usr/local/cuda'
+cuda_include = os.path.join(cuda_home, 'include')
+cuda_lib = os.path.join(cuda_home, 'lib64')
+
 setup(
     name="plavchan_gpu",
     version='1.0',
     ext_modules=[
         Extension(
             'plavchan',
-            sources=['plavchan.cu'], 
-            include_dirs=['/home/mpaz/anaconda3/envs/period/include/python3.9',
-                         '/home/mpaz/anaconda3/envs/period/include',
-                         '/usr/local/cuda/include'],  # Add CUDA include directory
-            library_dirs=['/home/mpaz/anaconda3/envs/period/lib'],
-            libraries=['python3.9', 'stdc++']  # Added stdc++ here too
+            sources=['plavchan.cu'],
+            include_dirs=[python_include, cuda_include],
+            library_dirs=[python_lib],
+            libraries=[python_version, 'stdc++'],
         )
     ],
     cmdclass={

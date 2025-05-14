@@ -5,7 +5,7 @@
 
 static int nBlocks = 256;
 static int nThreads = 512;
-static const float FLOAT_SCALE = 100.0;
+static const float FLOAT_SCALE = 10000.0;
 
 typedef struct {
     float* array;
@@ -157,7 +157,7 @@ __device__ void boxcar_smoothing(Array1D* m, Array1D* t, float width, Array1D* s
         //     continue;
         // }
 
-        smoothed->array[i] = runningSum / (1+right - left);
+        smoothed->array[i] = runningSum / (1 + right - left);
     }
 }
 

@@ -3,10 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from time import time
 
-times = [np.linspace(0,90,100).tolist()]
+times = [np.linspace(0,90,1000).tolist()]
 mags = [np.sin(times[0]).tolist()]
 
-trialperiods = np.linspace(0.1, 10, 1000).tolist()
+trialperiods = np.linspace(0.1, 10, 10000).tolist()
 width = 0.1
 
 t1 = time()

@@ -3,11 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from time import time
 
-times = [np.linspace(0,90,100).tolist()]
+np.random.seed(0)
+
+times = [np.random.uniform(0, 15, 300).tolist()]
 mags = [np.sin(times[0]).tolist()]
 
-trialperiods = np.linspace(0.1, 10, 1000).tolist()
-width = 0.1
+trialperiods = np.linspace(0.1, 10, 10000).tolist()
+width = 0.05
 
 t1 = time()
 pgram = pv(mags, times, trialperiods, width)[0]
