@@ -119,18 +119,18 @@ static PyObject* PY_plavchan_periodogram(PyObject* self, PyObject* args) {
 
 // Python integration stuff
 static struct PyMethodDef methods[] = {
-    {"__cuda__plavchan_pgram", (PyCFunction)PY_plavchan_periodogram, METH_VARARGS}, // defines public func name
-    {NULL, NULL}
+    {"__cuda__plavchan_pgram", (PyCFunction)PY_plavchan_periodogram, METH_VARARGS, "Compute Plavchan periodogram on GPU"}, 
+    {NULL, NULL, 0, NULL} // Sentinel - this is critical!
 };
 
 static struct PyModuleDef module = {
     PyModuleDef_HEAD_INIT,
-    "plavchan_gpu", // module name
+    "plavchan", 
     NULL,
     -1,
     methods
 };
 
-PyMODINIT_FUNC PyInit_plavchan(void) { // module name
+PyMODINIT_FUNC PyInit_plavchan(void) { 
     return PyModule_Create(&module);
 }

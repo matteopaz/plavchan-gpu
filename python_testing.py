@@ -1,4 +1,4 @@
-from plavchan_gpu.plavchan_gpu import plavchan_periodogram
+from plavchan_gpu import plavchan_periodogram
 import numpy as np
 import matplotlib.pyplot as plt
 from time import time
