@@ -1,2 +1,1 @@
-plavchan
-python_testing
+plavchan_gpu

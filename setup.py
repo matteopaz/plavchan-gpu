@@ -68,8 +68,8 @@ setup(
     version='1.0',
     ext_modules=[
         Extension(
-            'plavchan',
-            sources=['plavchan.cu'],
+            'plavchan_gpu',
+            sources=['./plavchan_gpu/plavchan.cu'],
             include_dirs=[python_include, cuda_include],
             library_dirs=[python_lib],
             libraries=[python_version, 'stdc++'],

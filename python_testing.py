@@ -1,18 +1,20 @@
-from __init__ import plavchan_periodogram as pv
+from plavchan_gpu.plavchan_gpu import plavchan_periodogram
 import numpy as np
 import matplotlib.pyplot as plt
 from time import time
 
 np.random.seed(0)
 
-times = [np.random.uniform(0, 15, 300).tolist()]
-mags = [np.sin(times[0]).tolist()]
+times = [np.random.uniform(0, 30, 500)]
+mags = [(np.sin(times[0]) + np.sin(times[0]*0.13) + np.random.normal(0, 0.1, 500))]
+times = [list(t) for t in times]
+mags = [list(m) for m in mags]
 
-trialperiods = np.linspace(0.1, 10, 10000).tolist()
+trialperiods = np.linspace(0.05, 10, 100000).tolist()
 width = 0.05
 
 t1 = time()
-pgram = pv(mags, times, trialperiods, width)[0]
+pgram = plavchan_periodogram(mags, times, trialperiods, width)[0]
 t2 = time()
 print("GPU time:", t2-t1)
 
