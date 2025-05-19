@@ -110,8 +110,6 @@ __device__ void simulSort(Array1D* main, Array1D* sim, float* stack_buf) {
 }
 
 __device__ void foldLC(Array1D* mag, Array1D* time, float modulus, float* stack_buf) {
-    float min = getMin(time);
-
     // raise error if modulus is 0
     if (modulus == 0) {
         printf("Error: Modulus cannot be zero.\n");
@@ -123,22 +121,10 @@ __device__ void foldLC(Array1D* mag, Array1D* time, float modulus, float* stack_
 
     // fold the light curve
     for (int i = 0; i < time->dim1; i++) {
-        time->array[i] = fmodf(time->array[i] - min, modulus);
+        time->array[i] = fmodf(time->array[i], modulus); // time array should already be zeroed
     }
 
     simulSort(time, mag, stack_buf);
-}
-
-__device__ inline int positive_modulo(int i, int n) {
-    return (i % n + n) % n;
-}
-
-__device__ float getCyclicAt(Array1D* arr, float arrmax, int idx) { // Returns a repeated timestamp
-    int N = arr->dim1;
-    int relative = idx / N; // truncates towards zero
-    size_t safe_idx = positive_modulo(idx, N);
-
-    return arr->array[safe_idx] + relative*arrmax;
 }
 
 __device__ void boxcar_smoothing(Array1D* m, Array1D* t, float width, Array1D* smoothed) {
@@ -152,25 +138,20 @@ __device__ void boxcar_smoothing(Array1D* m, Array1D* t, float width, Array1D* s
     size_t N = t->dim1;
     float runningSum = 0;
 
-    for (size_t i = 0; i < N; i++) {
-        // if (threadIdx.x + blockDim.x*blockIdx.x == 100) printf("runsum0: %f, ", runningSum);
-        runningSum += m->array[i];
-    }
-
-    short int l = -N; // left pointer increment
-    short int r = 0; // right pointer increment    
+    size_t l = 0; // left pointer increment
+    size_t r = 0; // right pointer increment    
 
     for (size_t i = 0; i < N; i++) { // Generate a smoothed value for each point in t
         float leftLimitValue = t->array[i] - halfWidth;
         float rightLimitValue = t->array[i] + halfWidth;
 
-        while (l < r && getCyclicAt(t, tmax, l) < leftLimitValue) {
-            runningSum -= m->array[positive_modulo(l, N)];
+        while (l < r && t->array[l] < leftLimitValue) {
+            runningSum -= m->array[l];
             l++;
         }
 
-        while (r < 2*N && getCyclicAt(t, tmax, r) < rightLimitValue) {
-            runningSum += m->array[positive_modulo(r, N)];
+        while (r < N && t->array[r] < rightLimitValue) {
+            runningSum += m->array[r];
             r++;
         }
 
