@@ -5,7 +5,6 @@
 
 static int nBlocks = 256;
 static int nThreads = 512;
-static const float FLOAT_SCALE = 10000.0;
 
 typedef struct {
     float* array;
@@ -54,7 +53,7 @@ __device__ void swap(float* a, float* b)
 
 __device__ int partition(Array1D* arr, Array1D* sim, int l, int h)
 {
-    int x = arr->array[h];
+    float x = arr->array[h];
     int i = (l - 1);
  
     for (int j = l; j <= h - 1; j++) {
@@ -112,8 +111,6 @@ __device__ void simulSort(Array1D* main, Array1D* sim, float* stack_buf) {
 
 __device__ void foldLC(Array1D* mag, Array1D* time, float modulus, float* stack_buf) {
     float min = getMin(time);
-    float max = getMax(time);
-    float scaleFactor = FLOAT_SCALE / (max - min);
 
     // raise error if modulus is 0
     if (modulus == 0) {
@@ -126,38 +123,58 @@ __device__ void foldLC(Array1D* mag, Array1D* time, float modulus, float* stack_
 
     // fold the light curve
     for (int i = 0; i < time->dim1; i++) {
-        time->array[i] = fmodf(scaleFactor * (time->array[i] - min), scaleFactor * modulus); // Times now lie on [0, FLOAT_SCALE]
+        time->array[i] = fmodf(time->array[i] - min, modulus);
     }
 
     simulSort(time, mag, stack_buf);
 }
 
+__device__ inline int positive_modulo(int i, int n) {
+    return (i % n + n) % n;
+}
+
+__device__ float getCyclicAt(Array1D* arr, float arrmax, int idx) { // Returns a repeated timestamp
+    int N = arr->dim1;
+    int relative = idx / N; // truncates towards zero
+    size_t safe_idx = positive_modulo(idx, N);
+
+    return arr->array[safe_idx] + relative*arrmax;
+}
+
 __device__ void boxcar_smoothing(Array1D* m, Array1D* t, float width, Array1D* smoothed) {
-    float halfWidth = width * FLOAT_SCALE / 2.0;
+    /*
+    Writes into `smoothed` a boxcar-smoothed equal-length version of magnitudes
+    m: value array
+    t: timestamp array on [0,1]
+    */
+    float tmax = getMax(t); 
+    float halfWidth = width * tmax / 2;
+    size_t N = t->dim1;
     float runningSum = 0;
 
-    float* left = t->array;
-    float* right = t->array;
+    for (size_t i = 0; i < N; i++) {
+        // if (threadIdx.x + blockDim.x*blockIdx.x == 100) printf("runsum0: %f, ", runningSum);
+        runningSum += m->array[i];
+    }
 
-    for (size_t i = 0; i < t->dim1; i++) {
-        float rightLim = t->array[i] + halfWidth;
-        float leftLim = t->array[i] - halfWidth;
+    short int l = -N; // left pointer increment
+    short int r = 0; // right pointer increment    
 
-        while (right < t->array + t->dim1 && *right < rightLim) {
-            runningSum += m->array[right - t->array];
-            right++;
+    for (size_t i = 0; i < N; i++) { // Generate a smoothed value for each point in t
+        float leftLimitValue = t->array[i] - halfWidth;
+        float rightLimitValue = t->array[i] + halfWidth;
+
+        while (l < r && getCyclicAt(t, tmax, l) < leftLimitValue) {
+            runningSum -= m->array[positive_modulo(l, N)];
+            l++;
         }
-        while (left < right && *left < leftLim) {
-            runningSum -= m->array[left - t->array];
-            left++;
+
+        while (r < 2*N && getCyclicAt(t, tmax, r) < rightLimitValue) {
+            runningSum += m->array[positive_modulo(r, N)];
+            r++;
         }
 
-        // if (right - left == 0) {
-        //     smoothed->array[i] = 0.0;
-        //     continue;
-        // }
-
-        smoothed->array[i] = runningSum / (1 + right - left);
+        smoothed->array[i] = runningSum / (r - l + 1); // average
     }
 }
 
@@ -176,7 +193,7 @@ __device__ float plavchan_metric(Array1D* mag, Array1D* time, float width, Array
 __global__ void plavchan_kernel(Array2D* mags, Array2D* times, Array1D* periods, float* width, 
     Array2D* periodogram, int objId, Array2D* folded_mags_buf , Array2D* folded_times_buf, Array2D* smoothed_buf) {
     
-        /*
+    /*
     mags: array of arrays of magnitudes
     time: array of arrays of times, same size as mags
     periods: array of trial periods
@@ -185,7 +202,6 @@ __global__ void plavchan_kernel(Array2D* mags, Array2D* times, Array1D* periods,
     objId: the object ID we are working on
     folded_*_buf: buffers for the folded light curves. Dimension (n_concurrent_threads, max_lc_length)
     */
-    
 
     int periodsPerThread = periods->dim1 / (blockDim.x * gridDim.x);
     if (periodsPerThread == 0) periodsPerThread = 1; // Clamp to at least one, or work doesnt get done sometimes
@@ -227,28 +243,50 @@ __global__ void plavchan_kernel(Array2D* mags, Array2D* times, Array1D* periods,
         }
 
         if (baseline_score == -1.0) { // if is first loop, calculate the baseline score
+            simulSort(&folded_time, &folded_mag, smoothed.array); // sort the light curve
             baseline_score = plavchan_metric(&folded_mag, &folded_time, *width, &smoothed);
         }
 
         foldLC(&folded_mag, &folded_time, period, smoothed.array); // fold the light curve, uses smooth buffer as stack space for sorting
 
+        // if (period > 2.28524 && period < 2.28525) {
+        //     printf("Period: %f d\n", period);
+        //     printf("Folded Mag: \n");
+        //     for (size_t j = 0; j < N; j++) {
+        //         printf("%f, ", folded_mag.array[j]);
+        //     }
+        //     printf("Folded Time: \n");
+        //     for (size_t j = 0; j < N; j++) {
+        //         printf("%f, ", folded_time.array[j]);
+        //     }
+        // }
+
         float score = plavchan_metric(&folded_mag, &folded_time, *width, &smoothed); // calculate the score
+
+        // if (period > 2.28524 && period < 2.28525) {
+        //     printf("Smoothed Mag: \n");
+        //     for (size_t j = 0; j < N; j++) {
+        //         printf("%f, ", smoothed.array[j]);
+        //     }
+
+        //     printf("Score: %f\n", score);
+        // }
 
         periodogram->array[objId][i] = baseline_score / score; // store the score in the periodogram
     }
 
-
     return;
 }
 
-void logArr2D(Array2D* arr) {
-    for (size_t i = 0; i < arr->dim1; i++) {
-        for (size_t j = 0; j < arr->dim2[i]; j++) {
-            printf("%f ", arr->array[i][j]);
-        }
-        printf("\n");
-    }
-}
+// void logArr2D(Array2D* arr) {
+//     for (size_t i = 0; i < arr->dim1; i++) {
+//         for (size_t j = 0; j < arr->dim2[i]; j++) {
+//             printf("%f ", arr->array[i][j]);
+//         }
+//         printf("\n");
+//     }
+// }
+
 // void logArr1D(Array1D* arr) {
 //     for (size_t i = 0; i < arr->dim1; i++) {
 //         printf("%f ", arr->array[i]);

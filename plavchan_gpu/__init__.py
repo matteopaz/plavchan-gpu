@@ -43,6 +43,12 @@ def plavchan_periodogram(mags, times, trial_periods, width):
         raise ValueError("trial_periods must not include 0")
     if width <= 0 or width > 1:
         raise ValueError("width must be on (0,1]")
+    
+    # zero out times
+
+    for i in range(len(times)):
+        min_t = min(times[i])
+        times[i] = [t - min_t for t in times[i]]
 
     return __cuda__plavchan_pgram(mags, times, trial_periods, width)
 

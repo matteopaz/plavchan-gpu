@@ -5,13 +5,13 @@ from time import time
 
 np.random.seed(0)
 
-times = [np.random.uniform(0, 30, 500)]
-mags = [(np.sin(times[0]) + np.sin(times[0]*0.13) + np.random.normal(0, 0.1, 500))]
+times = [np.random.uniform(0, 5000.0, 500)]
+mags = [(np.sin(times[0]))]
 times = [list(t) for t in times]
 mags = [list(m) for m in mags]
 
-trialperiods = np.linspace(0.05, 10, 100000).tolist()
-width = 0.05
+trialperiods = np.linspace(0.05, max(times[0])/10, 100000).tolist()
+width = 0.1
 
 t1 = time()
 pgram = plavchan_periodogram(mags, times, trialperiods, width)[0]
