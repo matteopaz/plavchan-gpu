@@ -1,4 +1,4 @@
-from setuptools import setup, Extension
+from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
 import os
 import sys
@@ -64,8 +64,6 @@ cuda_include = os.path.join(cuda_home, 'include')
 cuda_lib = os.path.join(cuda_home, 'lib64')
 
 setup(
-    name="plavchan_gpu",
-    version='1.0',
     ext_modules=[
         Extension(
             'plavchan',
@@ -77,5 +75,6 @@ setup(
     ],
     cmdclass={
         'build_ext': CUDABuildExt,
-    }
+    },
+    # Detailed package info now comes from pyproject.toml
 )

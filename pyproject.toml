@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "plavchan_gpu"
-version = "0.1.0"
+version = "1.0.0"
 description = "GPU-accelerated Plavchan periodogram calculation"
 readme = "README.md"
 authors = [
-    {name = "Matthew Paz", email = "matteopi314@gmail.com"}
+    {name = "Matteo Paz", email = "matteopi314@gmail.com"}
 ]
 license = {text = "MIT"}
 classifiers = [
@@ -21,5 +21,5 @@ classifiers = [
 requires-python = ">=3.6"
 
 [project.urls]
-"Homepage" = "https://github.com/yourusername/plavchan-gpu"
-"Bug Tracker" = "https://github.com/yourusername/plavchan-gpu/issues"
+"Homepage" = "https://github.com/matteopaz/plavchan-gpu"
+"Repository" = "https://github.com/matteopaz/plavchan-gpu"

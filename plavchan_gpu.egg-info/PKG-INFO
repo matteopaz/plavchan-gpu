@@ -1,11 +1,11 @@
-Metadata-Version: 2.2
+Metadata-Version: 2.4
 Name: plavchan_gpu
-Version: 0.1.0
+Version: 1.0.0
 Summary: GPU-accelerated Plavchan periodogram calculation
-Author-email: Matthew Paz <matteopi314@gmail.com>
+Author-email: Matteo Paz <matteopi314@gmail.com>
 License: MIT
-Project-URL: Homepage, https://github.com/yourusername/plavchan-gpu
-Project-URL: Bug Tracker, https://github.com/yourusername/plavchan-gpu/issues
+Project-URL: Homepage, https://github.com/matteopaz/plavchan-gpu
+Project-URL: Repository, https://github.com/matteopaz/plavchan-gpu
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: POSIX :: Linux
@@ -14,6 +14,7 @@ Classifier: Topic :: Scientific/Engineering :: Astronomy
 Requires-Python: >=3.6
 Description-Content-Type: text/markdown
 License-File: LICENSE
+Dynamic: license-file
 
 # Plavchan-GPU
 
