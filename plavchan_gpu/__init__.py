@@ -1,4 +1,4 @@
-from plavchan import __cuda__plavchan_pgram, get_device_count
+from plavchan import __cuda__plavchan_pgram, get_device_count # type: ignore
 import threading
 
 def cuda_wrapper(mags, times, trial_periods, width, device, returnlist):

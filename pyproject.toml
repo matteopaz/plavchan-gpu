@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "plavchan_gpu"
-version = "1.0.0"
+version = "1.0.1"
 description = "GPU-accelerated Plavchan periodogram calculation"
 readme = "README.md"
 authors = [
