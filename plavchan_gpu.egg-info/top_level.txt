@@ -1,2 +1,0 @@
-plavchan
-plavchan_gpu
