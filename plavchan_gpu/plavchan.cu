@@ -76,7 +76,8 @@ static PyObject* PY_plavchan_periodogram(PyObject* self, PyObject* args) {
     PyObject* pytimes;
     PyObject* pytrialperiods;
     float width;
-    if (PyArg_ParseTuple(args, "OOOf", &pymags, &pytimes, &pytrialperiods, &width) == 0) {
+    int device_id;
+    if (PyArg_ParseTuple(args, "OOOfi", &pymags, &pytimes, &pytrialperiods, &width, &device_id) == 0) {
         return NULL;
     }
 
@@ -100,8 +101,14 @@ static PyObject* PY_plavchan_periodogram(PyObject* self, PyObject* args) {
         }
     }
 
-    Array2D periodogram = plavchan_periodogram(mags, times, pds, width); // actual working step
 
+    cudaError_t device_error = cudaSetDevice(device_id);
+    if (device_error != cudaSuccess) {
+        printf("CUDA error: %s\n", cudaGetErrorString(device_error));
+        Py_RETURN_NONE;
+    }
+
+    Array2D periodogram = plavchan_periodogram(mags, times, pds, width); // actual working step
 
     // Convert PERIODGRAM to Python object
     PyObject* py_periodogram = PyList_New(periodogram.dim1);
@@ -117,10 +124,21 @@ static PyObject* PY_plavchan_periodogram(PyObject* self, PyObject* args) {
     return py_periodogram;
 }
 
+static PyObject* PY_get_device_count(PyObject* self, PyObject* args) {
+    int device_count;
+    cudaError_t device_error = cudaGetDeviceCount(&device_count);
+    if (device_error != cudaSuccess) {
+        printf("CUDA error: %s", cudaGetErrorString(device_error));
+        Py_RETURN_NONE;
+    }
+    return PyLong_FromLong(device_count);
+}
+
 // Python integration stuff
 static struct PyMethodDef methods[] = {
     {"__cuda__plavchan_pgram", (PyCFunction)PY_plavchan_periodogram, METH_VARARGS, "Compute Plavchan periodogram on GPU"}, 
-    {NULL, NULL, 0, NULL} // Sentinel - this is critical!
+    {"get_device_count", (PyCFunction)PY_get_device_count, METH_NOARGS, "Get number of CUDA devices"},
+    {NULL, NULL, 0, NULL} 
 };
 
 static struct PyModuleDef module = {
