@@ -1,7 +1,7 @@
 #include <float.h>
 #include <stdio.h>
 #include <cuda_runtime_api.h>
-#include <chrono>
+// #include <chrono>
 
 const int nBlocks = 256;
 const int nThreads = 512;
@@ -246,7 +246,7 @@ __global__ void plavchan_kernel(Array2D* mags, Array2D* times, Array1D* periods,
 
 static Array2D plavchan_periodogram(Array2D mags, Array2D times, Array1D pds, float width) {
 
-    auto start =  std::chrono::high_resolution_clock::now();
+    // auto start =  std::chrono::high_resolution_clock::now();
 
     size_t max_len = 0;
     for (size_t i = 0; i < mags.dim1; i++) {
@@ -401,27 +401,27 @@ static Array2D plavchan_periodogram(Array2D mags, Array2D times, Array1D pds, fl
     cudaMemcpy(&(d_folded_smoothed_buf->dim1), &n_concurrent_threads, sizeof(size_t), cudaMemcpyHostToDevice);
     cudaMemcpy(&(d_folded_smoothed_buf->dim2), &d_folded_smoothed_buf_dim2, sizeof(size_t*), cudaMemcpyHostToDevice);
 
-    auto end = std::chrono::high_resolution_clock::now();
+    // auto end = std::chrono::high_resolution_clock::now();
 
-    printf("Time taken for memory allocation: %lld ms\n", std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
-    fflush(stdout);
+    // printf("Time taken for memory allocation: %lld ms\n", std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+    // fflush(stdout);
     // Launch Kernel
     
-    printf("Launching kernel with %d blocks and %d threads on %d periods \n", nBlocks, nThreads, pds.dim1);
+    // printf("Launching kernel with %d blocks and %d threads on %d periods \n", nBlocks, nThreads, pds.dim1);
 
-    size_t freeMem, totalMem;
-    cudaMemGetInfo(&freeMem, &totalMem);
-    freeMem /= 1024*1024; // convert to MB
-    totalMem /= 1024*1024; // convert to MB
-    printf("Free memory: %zu/%zu MB\n", freeMem, totalMem);
-    fflush(stdout);
+    // size_t freeMem, totalMem;
+    // cudaMemGetInfo(&freeMem, &totalMem);
+    // freeMem /= 1024*1024; // convert to MB
+    // totalMem /= 1024*1024; // convert to MB
+    // printf("Free memory: %zu/%zu MB\n", freeMem, totalMem);
+    // fflush(stdout);
 
     cudaError_t err = cudaDeviceSynchronize();
     if (err != cudaSuccess) {
         fprintf(stderr, "CUDA error before kernel execution: %s\n", cudaGetErrorString(err));
     }
 
-    start = std::chrono::high_resolution_clock::now();
+    // start = std::chrono::high_resolution_clock::now();
     for (size_t objId = 0; objId < mags.dim1; objId++) {
         plavchan_kernel<<<nBlocks, nThreads>>>(d_mags, d_times, d_periods, d_width, d_periodogram, objId, 
             d_folded_mags_buf, d_folded_times_buf, d_folded_smoothed_buf);
@@ -432,10 +432,10 @@ static Array2D plavchan_periodogram(Array2D mags, Array2D times, Array1D pds, fl
     if (err != cudaSuccess) {
         fprintf(stderr, "CUDA error during kernel execution: %s\n", cudaGetErrorString(err));
     }
-    end = std::chrono::high_resolution_clock::now();
-    printf("Kernel execution finished\n");
-    printf("Time taken for computation: %lld ms\n", std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
-    fflush(stdout);
+    // end = std::chrono::high_resolution_clock::now();
+    // printf("Kernel execution finished\n");
+    // printf("Time taken for computation: %lld ms\n", std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+    // fflush(stdout);
 
     // Copy PERIODGRAM back to host
     for (size_t i = 0; i < periodogram.dim1; i++) {
