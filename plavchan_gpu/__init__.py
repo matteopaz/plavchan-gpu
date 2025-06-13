@@ -92,3 +92,5 @@ def plavchan_periodogram(mags, times, trial_periods, width, device=0):
         pgram.extend(partial_pgram)
 
     return pgram
+
+__version__ = "1.0.8"

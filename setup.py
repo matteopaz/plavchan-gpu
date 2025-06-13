@@ -87,7 +87,7 @@ cuda_lib = os.path.join(cuda_home, 'lib64')
 setup(
     ext_modules=[
         Extension(
-            'plavchan_gpu.plavchan',
+            'plavchan',
             sources=['./plavchan_gpu/plavchan.cu'],
             include_dirs=[python_include, cuda_include],
             library_dirs=[python_lib],
@@ -97,6 +97,5 @@ setup(
     cmdclass={
         'build_ext': CUDABuildExt,
     },
-    packages=["plavchan_gpu"]
     # Detailed package info now comes from pyproject.toml
 )
