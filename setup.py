@@ -43,13 +43,25 @@ class CUDABuildExt(build_ext):
             include_dirs = ext.include_dirs if hasattr(ext, 'include_dirs') else []
             include_args = [f'-I{d}' for d in include_dirs]
             
+            # Add the directory containing the source file to include paths
+            source_dir = os.path.dirname(os.path.abspath(source))
+            include_args.append(f'-I{source_dir}')
+            
             nvcc_cmd = [
                 'nvcc', '-c', source, '-o', object_file, 
-                '--compiler-options', '-fPIC', '--std=c++14'
+                '--compiler-options', '-fPIC', '--std=c++14',
+                '-Wno-deprecated-gpu-targets'  # Suppress deprecated GPU targets warning
             ] + include_args
             
             print(f"Compiling {source} with command: {' '.join(nvcc_cmd)}")
-            subprocess.check_call(nvcc_cmd)
+            try:
+                result = subprocess.check_output(nvcc_cmd, stderr=subprocess.STDOUT)
+                print(f"NVCC output: {result.decode()}")
+            except subprocess.CalledProcessError as e:
+                print(f"NVCC compilation failed with return code {e.returncode}")
+                print(f"Command: {' '.join(nvcc_cmd)}")
+                print(f"Output: {e.output.decode() if e.output else 'No output'}")
+                raise
             objects.append(object_file)
         
         # Add the object files to the Extension
