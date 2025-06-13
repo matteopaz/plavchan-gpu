@@ -7,6 +7,15 @@ import sysconfig
 
 class CUDABuildExt(build_ext):
     def build_extension(self, ext):
+        # Check if nvcc is available
+        try:
+            subprocess.check_output(['nvcc', '--version'], stderr=subprocess.STDOUT)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            raise RuntimeError(
+                "CUDA compiler (nvcc) not found. This package requires CUDA to be installed. "
+                "Please install CUDA toolkit or use a pre-built wheel if available."
+            )
+        
         # Only handle extensions with .cu files
         cuda_sources = [s for s in ext.sources if s.endswith('.cu')]
         if not cuda_sources:
@@ -49,7 +58,7 @@ class CUDABuildExt(build_ext):
         # Add CUDA runtime libraries and C++ runtime
         cuda_lib_dirs = ['/usr/local/cuda/lib64']
         ext.library_dirs = (ext.library_dirs or []) + cuda_lib_dirs
-        ext.libraries = (ext.libraries or []) + ['cudart', 'stdc++']  # Added stdc++
+        ext.libraries = (ext.libraries or []) + ['cudart', 'stdc++']
         ext.runtime_library_dirs = cuda_lib_dirs
         
         # Now build the extension with the object files
@@ -66,7 +75,7 @@ cuda_lib = os.path.join(cuda_home, 'lib64')
 setup(
     ext_modules=[
         Extension(
-            'plavchan',
+            'plavchan_gpu.plavchan',
             sources=['./plavchan_gpu/plavchan.cu'],
             include_dirs=[python_include, cuda_include],
             library_dirs=[python_lib],
@@ -76,5 +85,6 @@ setup(
     cmdclass={
         'build_ext': CUDABuildExt,
     },
+    packages=["plavchan_gpu"]
     # Detailed package info now comes from pyproject.toml
 )
